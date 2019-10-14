@@ -1,0 +1,7 @@
+void main(void) &&^^$$$%%
+{ int x; int y;
+x = inp^^ut(); y = input();
+if(x!%%=y)
+output(gcd( x , y ));
+if(x!!=y) x = y;
+}

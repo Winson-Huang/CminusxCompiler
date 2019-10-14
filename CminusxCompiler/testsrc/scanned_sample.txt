@@ -1,0 +1,73 @@
+1: void main(void) &&^^$$$%%
+	1: reserved word--void
+	1: identifier, name=main
+	1: (
+	1: reserved word--void
+	1: )
+	1: errorchar: &
+	1: errorchar: &
+	1: errorchar: ^
+	1: errorchar: ^
+	1: errorchar: $
+	1: errorchar: $
+	1: errorchar: $
+	1: errorchar: %
+	1: errorchar: %
+2: { int x; int y;
+	2: {
+	2: reserved word--int
+	2: identifier, name=x
+	2: ;
+	2: reserved word--int
+	2: identifier, name=y
+	2: ;
+3: x = inp^^ut(); y = input();
+	3: identifier, name=x
+	3: =
+	3: identifier, name=inp
+	3: errorchar: ^
+	3: errorchar: ^
+	3: identifier, name=ut
+	3: (
+	3: )
+	3: ;
+	3: identifier, name=y
+	3: =
+	3: identifier, name=input
+	3: (
+	3: )
+	3: ;
+4: if(x!%%=y)
+	4: reserved word--if
+	4: (
+	4: identifier, name=x
+	4: unfinished token--! errorchar: %
+	4: errorchar: %
+	4: =
+	4: identifier, name=y
+	4: )
+5: output(gcd( x , y ));
+	5: identifier, name=output
+	5: (
+	5: identifier, name=gcd
+	5: (
+	5: identifier, name=x
+	5: ,
+	5: identifier, name=y
+	5: )
+	5: )
+	5: ;
+6: if(x!!=y) x = y;
+	6: reserved word--if
+	6: (
+	6: identifier, name=x
+	6: unfinished token--! 
+	6: !=
+	6: identifier, name=y
+	6: )
+	6: identifier, name=x
+	6: =
+	6: identifier, name=y
+	6: ;
+7: }
+	7: }
