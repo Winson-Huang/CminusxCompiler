@@ -99,7 +99,12 @@ char GetNextChar() //得到下一个字符
         bufsize = strlen(linebuf);//确定缓冲区实际大小
         cout<<lineord<<": "<<linebuf<<endl;
         of<<lineord<<": "<<linebuf<<endl;
-        return linebuf[bufpos++];
+        if(bufsize==0)  //说明是空行，如果直接返回，会返回'\0'
+        {
+            bufpos++;
+            return '\n';
+        }
+        else return linebuf[bufpos++];
     }
     else if(bufpos==bufsize)    //到达行尾，下一个字符设置为'\n'
     {

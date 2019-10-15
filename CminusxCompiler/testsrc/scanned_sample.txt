@@ -13,61 +13,63 @@
 	1: errorchar: $
 	1: errorchar: %
 	1: errorchar: %
-2: { int x; int y;
-	2: {
-	2: reserved word--int
-	2: identifier, name=x
-	2: ;
-	2: reserved word--int
-	2: identifier, name=y
-	2: ;
-3: x = inp^^ut(); y = input();
-	3: identifier, name=x
-	3: =
-	3: identifier, name=inp
-	3: errorchar: ^
-	3: errorchar: ^
-	3: identifier, name=ut
-	3: (
-	3: )
-	3: ;
-	3: identifier, name=y
-	3: =
-	3: identifier, name=input
-	3: (
-	3: )
-	3: ;
-4: if(x!%%=y)
-	4: reserved word--if
-	4: (
+2: 
+3: 
+4: { int x; int y;
+	4: {
+	4: reserved word--int
 	4: identifier, name=x
-	4: unfinished token--! errorchar: %
-	4: errorchar: %
-	4: =
+	4: ;
+	4: reserved word--int
 	4: identifier, name=y
-	4: )
-5: output(gcd( x , y ));
-	5: identifier, name=output
-	5: (
-	5: identifier, name=gcd
-	5: (
+	4: ;
+5: x = inp^^ut(); y = input();
 	5: identifier, name=x
-	5: ,
-	5: identifier, name=y
-	5: )
+	5: =
+	5: identifier, name=inp
+	5: errorchar: ^
+	5: errorchar: ^
+	5: identifier, name=ut
+	5: (
 	5: )
 	5: ;
-6: if(x!!=y) x = y;
+	5: identifier, name=y
+	5: =
+	5: identifier, name=input
+	5: (
+	5: )
+	5: ;
+6: if(x!%%=y)
 	6: reserved word--if
 	6: (
 	6: identifier, name=x
-	6: unfinished token--! 
-	6: !=
-	6: identifier, name=y
-	6: )
-	6: identifier, name=x
+	6: unfinished token--! errorchar: %
+	6: errorchar: %
 	6: =
 	6: identifier, name=y
-	6: ;
-7: }
-	7: }
+	6: )
+7: output(gcd( x , y ));
+	7: identifier, name=output
+	7: (
+	7: identifier, name=gcd
+	7: (
+	7: identifier, name=x
+	7: ,
+	7: identifier, name=y
+	7: )
+	7: )
+	7: ;
+8: if(x!!=y) x = y;
+	8: reserved word--if
+	8: (
+	8: identifier, name=x
+	8: unfinished token--! 
+	8: !=
+	8: identifier, name=y
+	8: )
+	8: identifier, name=x
+	8: =
+	8: identifier, name=y
+	8: ;
+9: }
+	9: }
