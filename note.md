@@ -7,7 +7,7 @@
 C-Minus的完整语法由附录A说明.  x部分的特性和功能待定. 语言源程序文件后缀名设置为`.cmnsx` 
 
 本项目拟使用C++语言进行开发, 使用C++11的特性. 项目将会同步在github平台上, 地址为:
-https://github.com/AXILUOWEI/CminusxCompiler
+https://github.com/Winson-Huang/CminusxCompiler
 
 
 ## 模块分析:
