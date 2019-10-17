@@ -15,14 +15,14 @@
 
 3. 其他标记是*ID*和*NUM*, 通过下列正则表达式定义:
 
-  ```
-  ID = letter letter*
-  NUM = digit digit*
-  letter = a|..|z|A|..|Z
-  digit = 0|..|9
-  ```
+    ```
+      ID = letter letter*
+      NUM = digit digit*
+      letter = a|..|z|A|..|Z
+      digit = 0|..|9
+    ```
 
-  小写和大写字母是有区别的.
+      小写和大写字母是有区别的.
 
 4. 空格由空白, 换行符和制表符组成. 空格通常被忽略, 除了它必须分开 ID, NUM关 键字.
 
