@@ -177,9 +177,9 @@
    
    
    ```
-
-扫描信息如下:
-
+   
+   扫描信息如下：
+   
    ```
    1: int gcd (int u, int v)
    	1: reserved word--int
@@ -226,9 +226,7 @@
    9: }
    	9: }
    10: 
-   	10: errorchar:  
    11: 
-   	11: errorchar:  
    12: void main(void)
    	12: reserved word--void
    	12: identifier, name=main
@@ -270,13 +268,12 @@
    16: }
    	16: }
    17: 
-   	17: errorchar:  
    18: 
-   	18: errorchar:  
    
    ```
-
-
+   
+   
+   
 
 2. **错误情况**
 
@@ -370,7 +367,8 @@
    	7: }
    
    ```
-
-
+   
+   
+   
 
 暂时没有发现问题. 
