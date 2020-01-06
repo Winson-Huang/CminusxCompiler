@@ -2,28 +2,29 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+
+#include "global.h"
+#include "tools.h"
 #include "scanner.h"
+
 using namespace std;
 //±äÁ¿Çø
 string infilename;
 string outfilename;
-ifstream srcf;  //ÎÄ¼ş¾ä±ú
-ofstream of;
+Token nexttoken;    //ÏÂÒ»¸ö¼ÇºÅ
+//ÄÚ²¿
 int lineord=0;  //ĞĞºÅ
 int const MAX = 256;    //»º³åÇø×î´ó³¤¶È
 char linebuf[MAX];  //Ô´ÎÄ¼şĞĞ»º³å
-Token nexttoken;    //ÏÂÒ»¸ö¼ÇºÅ
-//string linebuf;
-int bufpos = 1; //¶ÁÈ¡Ö¸Õë
-int bufsize = 0;    //»º³åÇøÊµ¼Ê³¤¶È
 char nxtChr;    //´ı´¦ÀíµÄ×Ö·û
 const int height=28, width=20; //×ª»»±í´óĞ¡
 State transion[height][width]; //×ª»»±í
 StateType sttype[height];   //Çø·Ö½ÓÊÜ×´Ì¬£¬·Ç½ÓÊÜ×´Ì¬£¬ ´íÎó×´Ì¬µÄÈıÖµÊı×é
 const int reWordsSize = 6;  const int WordmaxSize = 6;
 string reservedWords[reWordsSize] = {"else", "if", "int", "return", "void", "while"};
+
 //º¯ÊıÇø
-void BuildTransion()    //´ÓÎÄ¼ş¹¹Ôì×ª»»±í
+static void BuildTransion()    //´ÓÎÄ¼ş¹¹Ôì×ª»»±í
 {
     //¹¹Ôì×ª»»±í
     string transfname = "..\\BuildTransion\\transiondata.txt";
@@ -59,19 +60,9 @@ void BuildTransion()    //´ÓÎÄ¼ş¹¹Ôì×ª»»±í
     {
         sttype[i] = StateType::UNACCPT;
     }
+}
 
-}
-void Welcome()  //»¶Ó­ĞÅÏ¢
-{
-    string welcomeText = "scanner for cminusx\n version: 0.1 \nÉ¨Ãè³ÌĞò¿ªÊ¼...\n";
-    cout<<welcomeText;
-    BuildTransion();
-}
-void Summary()  //½áÊøĞÅÏ¢
-{
-    cout<<"ÔËĞĞ½áÊø.\n";
-}
-void GetFileName()    //»ñÈ¡ÎÄ¼şÃû
+static void GetFileName()    //»ñÈ¡ÎÄ¼şÃû
 {
     char option;
     cout<<"ÊäÈëyÉ¨ÃèÎÄ¼ş£¬·ñÔòÉ¨ÃèÑùÀı£º";
@@ -89,7 +80,21 @@ void GetFileName()    //»ñÈ¡ÎÄ¼şÃû
         outfilename = ".\\testsrc\\scanned_sample.txt";
     }
 }
-char GetNextChar() //µÃµ½ÏÂÒ»¸ö×Ö·û
+
+void Strtscan()  //»¶Ó­ĞÅÏ¢Óë×¼±¸¹¤×÷
+{
+    string welcomeText = "scanner for cminusx\n version: 0.1 \nÉ¨Ãè³ÌĞò¿ªÊ¼...\n";
+    cout<<welcomeText;
+    BuildTransion();
+    GetFileName();
+}
+
+void Endscan()  //½áÊøĞÅÏ¢
+{
+    cout<<"É¨Ãè³ÌĞò½áÊø.\n";
+}
+
+static char GetNextChar() //µÃµ½ÏÂÒ»¸ö×Ö·û
 {
     if(bufpos>bufsize)//»º³åÇøÒÑ¶ÁÈ¡Íê±Ï,ĞèÒª¸üĞÂ
     {
@@ -116,7 +121,8 @@ char GetNextChar() //µÃµ½ÏÂÒ»¸ö×Ö·û
         return linebuf[bufpos++];
     }
 }
-AlphaBeta ChrToAlpBt(char nxtchr)   //½«³õÊ¼×Ö·û×ª»¯Îª×ÖÄ¸±íÃ¶¾ÙÀàĞÍ
+
+static AlphaBeta ChrToAlpBt(char nxtchr)   //½«³õÊ¼×Ö·û×ª»¯Îª×ÖÄ¸±íÃ¶¾ÙÀàĞÍ
 {
     /**
     LETTER, DIGIT,
@@ -165,7 +171,8 @@ AlphaBeta ChrToAlpBt(char nxtchr)   //½«³õÊ¼×Ö·û×ª»¯Îª×ÖÄ¸±íÃ¶¾ÙÀàĞÍ
     }
     return nxtAlphBt;
 }
-int BinSearResvd(string tknval) //¸ù¾İ×Ö·û´®·µ»Ø±£Áô×ÖÁĞ±íµÄÏÂ±ê, Èç¹û²»ÔÚÆäÖĞ¾Í·µ»Ø-1
+
+static int BinSearResvd(string tknval) //¸ù¾İ×Ö·û´®·µ»Ø±£Áô×ÖÁĞ±íµÄÏÂ±ê, Èç¹û²»ÔÚÆäÖĞ¾Í·µ»Ø-1
 {
     int start = 0; int terminal = reWordsSize-1; int cen;
     while(start<=terminal)
@@ -186,7 +193,8 @@ int BinSearResvd(string tknval) //¸ù¾İ×Ö·û´®·µ»Ø±£Áô×ÖÁĞ±íµÄÏÂ±ê, Èç¹û²»ÔÚÆäÖĞ¾Í
     }
     return -1;
 }
-TokenType AcptToTknTp(State nowstate, string tknval)   //´ÓÒ»¸ö×Ö·û´®ºÍÒ»¸ö½ÓÊÜ×´Ì¬µÃµ½¼ÇºÅµÄÀàĞÍ
+
+static TokenType AcptToTknTp(State nowstate, string tknval)   //´ÓÒ»¸ö×Ö·û´®ºÍÒ»¸ö½ÓÊÜ×´Ì¬µÃµ½¼ÇºÅµÄÀàĞÍ
 {
     TokenType re = TokenType::ERROR;
     //Ö»Ğè¿¼ÂÇ½ÓÊÜ×´Ì¬,¹Û²ìStateºÍTokenType
@@ -209,7 +217,8 @@ TokenType AcptToTknTp(State nowstate, string tknval)   //´ÓÒ»¸ö×Ö·û´®ºÍÒ»¸ö½ÓÊÜ×
     }
     else return re;
 }
-void PrintToken()   //½«Éú³ÉµÄ¼ÇºÅ´òÓ¡³öÀ´
+
+static void PrintToken()   //½«Éú³ÉµÄ¼ÇºÅ´òÓ¡³öÀ´
 {
     of<<"\t"<<lineord<<": ";
     cout<<"\t"<<lineord<<": ";
@@ -241,7 +250,8 @@ void PrintToken()   //½«Éú³ÉµÄ¼ÇºÅ´òÓ¡³öÀ´
         cout<<"else"<<endl;
     }
 }
-void PrintElseCharError()   //Èç¹ûÏÂÒ»¸ö×Ö·ûÊÇELSECHAR£¬Ö±½Ó½«Î´Éú³ÉµÄ¼ÇºÅÊä³ö£¬²¢½«´íÎó×Ö·ûÊä³ö
+
+static void PrintElseCharError()   //Èç¹ûÏÂÒ»¸ö×Ö·ûÊÇELSECHAR£¬Ö±½Ó½«Î´Éú³ÉµÄ¼ÇºÅÊä³ö£¬²¢½«´íÎó×Ö·ûÊä³ö
 {
     string halftoken="";
     if(nexttoken.value!="")
@@ -251,7 +261,8 @@ void PrintElseCharError()   //Èç¹ûÏÂÒ»¸ö×Ö·ûÊÇELSECHAR£¬Ö±½Ó½«Î´Éú³ÉµÄ¼ÇºÅÊä³ö£¬
     of<<"\t"<<lineord<<": "<<halftoken<<"errorchar: "<<nxtChr<<endl;
     cout<<"\t"<<lineord<<": "<<halftoken<<"errorchar: "<<nxtChr<<endl;
 }
-void PrintCharPosError()    //ÏÂÒ»¸ö×Ö·û²»ÊÇELSECHAR£¬ÓĞ¿ÉÄÜÊÇÏÂ¸ö¼ÇºÅµÄÊ×Î»
+
+static void PrintCharPosError()    //ÏÂÒ»¸ö×Ö·û²»ÊÇELSECHAR£¬ÓĞ¿ÉÄÜÊÇÏÂ¸ö¼ÇºÅµÄÊ×Î»
 {
     string halftoken="";
     if(nexttoken.value!="") //¸Ã·ÖÖ§Ó¦¸Ã±Ø¶¨»á½øÈë
@@ -261,6 +272,7 @@ void PrintCharPosError()    //ÏÂÒ»¸ö×Ö·û²»ÊÇELSECHAR£¬ÓĞ¿ÉÄÜÊÇÏÂ¸ö¼ÇºÅµÄÊ×Î»
     of<<"\t"<<lineord<<": "<<halftoken<<endl;
     cout<<"\t"<<lineord<<": "<<halftoken<<endl;
 }
+
 void GetNextToken() //µÃµ½ÏÂÒ»¸ö¼ÇºÅ
 {
     //³õÊ¼»¯

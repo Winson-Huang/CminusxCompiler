@@ -5,14 +5,18 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "global.h"
+#include "tools.h"
 #include "scanner.h"
 using namespace std;
-
+ifstream srcf;  //文件句柄
+ofstream of;
+int bufpos = 1; //读取指针
+int bufsize = 0;    //缓冲区实际长度
 
 int main()
 {
-    Welcome();
-    GetFileName();
+    Strtscan();
     srcf.open(&(infilename[0]), ios::in);//以文件名打开文件
     of.open(&(outfilename[0]), ios::out);
     if(!srcf.is_open()){
@@ -29,7 +33,7 @@ int main()
 
     of.close();
     srcf.close();
-    Summary();
+    Endscan();
 
     return 0;
 }
