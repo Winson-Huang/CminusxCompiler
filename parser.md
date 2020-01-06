@@ -94,14 +94,14 @@ C-minus语言的**BNF**语法如下:
 
 2. declaration-list → { declaration }
 
-   一个程序可以组织为声明类型结点的链表, 即整颗语法树是一个单链表的形式. 
+   一个程序可以组织为声明类型结点的链表, 即整颗语法树是一个单链表的形式, 因此declaration结点都需要**兄弟指针**.
 
 3. declaration → var-declaration | fun-declaration
 
 4. var-declaration → type-specifier **ID** [ **[NUM]** ] **;**
 
    注意此处嵌套的方括号, 外层的没有加粗, 表示其内部的结构是可选的.
-   结构可以设计为存储**三个属性**, 分别是数据类型 `DataType{INT, VOID}`, 标识符的名称`string name`, 以及数组长度`int arrlen`, 这里可以规定如果arrlen为负就表示不是数组, 不需要存储子女结点, 即它一定是叶结点. 考虑到第11条规则, 为其添加**一个子女指针**.
+   结构可以设计为存储**三个属性**, 分别是数据类型 `DataType{INT, VOID}`, 标识符的名称`string name`, 以及数组长度字面值`string arrlen`, 这里可以规定如果arrlen值为负就表示不是数组, 不需要存储子女结点, 即它一定是叶结点. 考虑到第2条规则, 为其添加**一个兄弟指针**.
 
 5. type-specifier → **int** | **void**
 
@@ -109,7 +109,7 @@ C-minus语言的**BNF**语法如下:
 
 6. fun-declaration → type-specifier **ID** **(** params **)**  compound-stmt
 
-   此处中译本错误. 结构可以设计为存储**两个属性**, 与var-declaration的前两个属性完全相同, 它还有**两个子女指针**, 第一个子女是自己的参数列表, 可以利用param类型组织成一个单链表, 另一个是函数体, 详情见后.
+   此处中译本错误. 结构可以设计为存储**两个属性**, 与var-declaration的前两个属性完全相同, 它还有**两个子女指针**, 第一个子女是自己的参数列表, 可以利用param类型组织成一个单链表, 另一个是函数体, 详情见后. 还有**兄弟指针**.
 
 7. params → params-list | **void**
 
@@ -117,24 +117,22 @@ C-minus语言的**BNF**语法如下:
 
 9. param → type-specifier **ID** [ **[ ]** ]
 
-   结构可以设计为存储**三个属性**, 分别是数据类型 `DataType{INT, VOID}`, 标识符的名称`string name`, 以及标识参数是变量还是数组的布尔变量`bool kind`, 考虑到param结点需要链接成线性表, 为其添加**一个兄弟指针**`treeNode* sibling`, 如果链表为空即表示void.
+   param结点结构可以设计为存储**三个属性**, 分别是数据类型 `DataType{INT, VOID}`, 标识符的名称`string name`, 以及标识参数是变量还是数组的布尔变量`bool kind`, 考虑到规则6, param结点需要链接成线性表, 为其添加**一个兄弟指针**, 如果链表为空即表示void.
 
 10. compound-stmt → **{** local-declarations statement-list **}**
     该结构非常固定, 有且仅有两个有先后关系的子女, 分别是local-declarations和statement-list, 所以存储**两个子女指针**即可. 考虑到规则12, 还需要**兄弟指针**. 如果改进属性将其设计为声明与语句可以交替出现, 那么可以将其子女设计为一个链表, 对应的修改就是var-declaration的兄弟指针和statement的兄弟指针可以混用. 
 
 11. local-declarations → { var-declaration }
 
-    该结构也是单链表结构, 不需要单独设计结点, 直接在var-declaration中添加一个兄弟指针即可. 
-
 12. statement-list → { statement }
 
-    同上, 在**所有statement类型结点中都需要一个兄弟指针**.
+    由于是重复结构, 在**所有statement类型结点中都需要一个兄弟指针**.
 
 13. statement → expression-stmt | compound-stmt | selection-stmt| iteration-stmt | return-stmt
 
 14. expression-stmt → [ expression ] **;** 
 
-    表达式语句的结构可以设计为**一个子女指针**, 指向表达式结点, 若为空表示语句为空, 另一个是**兄弟指针**. 
+    表达式语句的结构可以设计为**一个子女指针**, 指向表达式结点, 若为空表示语句为空, 另一个是**兄弟指针**.
 
 15. selection-stmt → **if** **(** expression **)** statement [ **else** statement ]
 
@@ -150,7 +148,7 @@ C-minus语言的**BNF**语法如下:
 
 18. expression → { var **=** } simple-expression
 
-    表达式结点需要**两个子女指针**, 一个指针用于将左值链接成一个单链表, 另一个存储一个简单表达式结点. 由规则27可知, 还需要**兄弟指针**. 
+    表达式结点需要**两个子女指针**, 一个指针用于将左值链接成一个单链表, 另一个存储一个简单表达式结点. 由规则27可知, 还需要**兄弟指针**. 还可以有**一个属性**`int val`, 来存储表达式的值.
 
 19. var → **ID** [ **[** expression **]** ]
 
@@ -164,13 +162,13 @@ C-minus语言的**BNF**语法如下:
 
 22. additive-expression → term { addop term }
 
-    加法表达式需要**两个子女指针和一个属性**, 分别存储两个乘积结点和算符. 
+    虽然这里是重复结构, 但不设计为线性表, 而是按照BNF中的结构, 设置**两个子女指针和一个属性**, 分别存储additive-expression结点和乘积结点和算符. 
 
 23. addop →**+** | **-**
 
-24. term → factor mulop [ factor ]
+24. term → factor { mulop factor }
 
-    乘积结点需要**两个子女指针和一个属性**, 分别存储两个因子结点和算符. 
+    与additive-expression相同, 不设计为线性表, 乘积结点需要**两个子女指针和一个属性**, 分别存储term结点, 因子结点和算符. 
 
 25. mulop →***** | **/**
 
@@ -188,11 +186,69 @@ C-minus语言的**BNF**语法如下:
 
 ------
 
+通过以上分析, 可以看出有些结构是完全相同的, 比如各种表达式的结构. 因此在结点类中的节点类型属性中就不需要太多的分类, 总结如下:
 
+设一个大类Declaration, 其下又分为var-dclr和fun-dclr两小类, param的结构很类似, 为了方便可以归入此类.
+设为一个大类Statement, 其下分为expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt.
+设一个大类Expplus, var和expression结点归为此类, 将所有的操作符表达式统一为op-exp, 也归为此类, call结点, factor结点也归为此类.
 
+各种结点所需的属性是不同的, 可以分别设计为不同的类, 然后不同的属性合并为一个联合体作为语法树结点的属性. 
 
+则结点的类结构设计如下:
 
+```c++
+enum class NodeKind{
+    Declaration, Statement, Expplus
+};
+enum class Dclrkind{
+    var-dclr, fun-dclr, param
+};
+enum class Stmtkind{
+    expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt
+};
+enum class Exppkind{
+    var, expression, op-exp, call, factor
+};
+enum class DataType{INT, VOID};
+int const MAXCHILDREN = 3;
 
+class vdclrAttr{
+public:
+    DataType datatype;
+    string name;
+    string arrlen;
+};
+class fdclrAttr{
+    DataType datatype;
+    string name;
+};
+class paramAttr{
+public:    
+    DataType datatype;
+    string name;
+    bool kind;
+};
+
+class treeNode{
+public:
+    treeNode* child[MAXCHILDREN];
+    treeNode* sibling;
+    int lineno;//行号
+    NodeKind nodekind;
+    union {
+        Dclrkind dclr; Stmtkind stmt; Exppkind expp;
+    } kind;
+    union {
+        vdclrAttr vdclrattr;
+        fdclrAttr fdclrattr;
+        paramAttr paramattr;
+        string name;//var,call
+        int val;//expression, factor
+        string op;//或者改为记号类型?        
+    }
+	//Exptype;
+};
+```
 
 
 
@@ -220,3 +276,4 @@ C-minus语言的**BNF**语法如下:
 
 个人认为构造语法树的关键在于构造语法树结点的结构, 最开始尝试时无从下手, 曾试图通过分层结构分析, 发现行不通, 后来认识到构造语法树结点的目的是通过一个统一的类来记录不同类型结点所需要存储的信息. 因此应该从逐条分析语法规则开始, 最后对分析进行总结. 
 
+感觉语法分析和语义分析的关系比这一部分与扫描器的关系更密切. 
