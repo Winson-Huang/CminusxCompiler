@@ -188,26 +188,7 @@ C-minus语言的**BNF**语法如下:
 
 ------
 
-考虑到程序的实现, 我们需要声明一个类统一表示节点的结构, 而从它的语法可以看出, 语法树的节点类型非常多, 在这里我们采用教材中的办法, 即: 将类型分级表示.
 
-
-
-大错特错!!!!并不是分级表示, 而是分类表示, C- 语言的语法树节点只可能是declaration, exp, stmt, declaration有两种, exp有四种 assign const op id, stmt有五种  注意赋值语句与赋值表达式是不同的.
-
-如果采用教材中的办法, 就需要为语法树的结点进行分类, 分类的依据主要是结点的结构. 分析如下: 语法树的结点首先可以分为三个大类: `NodeKind{declaration, exp, stmt}`, 其中declaration分为`declaration{vardclr, fundclr, param}`, exp分为`exp{assign, const, op, id}`, stmt有分为`stmt{expression, compound, selection, iteration, return-stmt}`. (怎么得到的?归纳不同类型的结构)
-
-var类型结点. 
-
-declaration::vardclr的结构是存储三个属性, 分别是数据类型 `DataType{INT, VOID}`, 标识符的名称`string name`, 以及数组长度`int arrlen`, 这里可以规定如果arrlen为负就表示不是数组, 不需要存储子女结点, 即它一定是叶结点. 
-declaration::param的结构是存储三个属性, 分别是数据类型 `DataType{INT, VOID}`, 标识符的名称`string name`, 以及标识参数是变量还是数组的布尔变量`bool kind`, 考虑到param结点需要链接成线性表, 为其添加一个兄弟指针`treeNode* sibling`. 
-declaration::fundclr的结构是存储两个属性, 与declaration::vardclr的前两个属性完全相同, 它还有两个子女指针, 第一个子女是自己的参数列表, 可以利用declaration::param类型组织成一个单链表, 另一个是函数体, 详情见后.
-exp::assign的结构比较简单, 可以添加一个属性`int val`, 来存储表达式的值, 然后两个子女指针分别为变量链表的头指针和表达式结点指针. 
-
-
-
-
-
-compound-stmt该结构非常固定, 有且仅有两个有先后关系的子女, 分别是local-declarations和statement-list. 
 
 
 
