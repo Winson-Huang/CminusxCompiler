@@ -78,7 +78,7 @@ C-minus语言的**BNF**语法如下:
 
 其中粗体表示终结符.
 
-通过以上BNF语法可以看出, C-minus程序由声明序列组成, 而声明分为两种, 一种是变量声明, 另一种是函数声明. 声明一个变量需要指出变量的类型和变量名. 声明一个函数则需要指出返回值类型, 函数名以及参数列表, 如果识别出语句序列子结构, 也被归为函数声明. 语句序列子结构中有本地变量声明以及语句序列. 而语句又分为许多种. 
+通过以上BNF语法可以看出, C-minus程序由声明序列组成, 而声明分为两种, 一种是变量声明, 另一种是函数声明. 声明一个变量需要指出变量的类型和变量名. 声明一个函数则需要指出返回值类型, 函数名以及参数列表, 如果识别出语句序列子结构, 也被归为函数声明. 语句序列子结构中有本地变量声明以及语句序列. 而语句又分为许多种.
 
 语法分析器的输入是扫描器的输出, 即记号序列, 而扫描器的调用方式是获取下一个记号并存储在nexttoken变量中. 分析器可以不断调用这一过程, 并根据不断增长的记号序列来识别各种语法结构. 最终构建整个语法树.
 
@@ -92,7 +92,7 @@ C-minus语言的**BNF**语法如下:
 
 1. program → declaration-list
 
-2. declaration-list → { declaration }
+2. declaration-list → declaration { declaration }
 
    一个程序可以组织为声明类型结点的链表, 即整颗语法树是一个单链表的形式, 因此declaration结点都需要**兄弟指针**.
 
@@ -174,7 +174,7 @@ C-minus语言的**BNF**语法如下:
 
 26. factor → **(** expression **)** | var | call | **NUM**
 
-    因子结点需要**一个子女指针**或**一个属性**, 指针存储expression或var或call, 属性存储NUM的字面值或者数值. 
+    这个识别过程说明需要为expression, var, call和常数四种结点设计一个统一的过程, 同时需要为NUM设计一个常数结点. 常数结点仅需要一个属性来存储字面值. 
 
 27. call → **ID** **(** args **)**
 
@@ -186,66 +186,79 @@ C-minus语言的**BNF**语法如下:
 
 ------
 
-通过以上分析, 可以看出有些结构是完全相同的, 比如各种表达式的结构. 因此在结点类中的节点类型属性中就不需要太多的分类, 总结如下:
+结构不同的结点实际上都需要一个不同的识别过程, 然而程序中却有可能在同一个上下文中放置不同的结点, 比如声明序列中任意位置都可能是函数声明或变量声明, 这就要求在编程时为它们设计一个统一的过程, 当然这个统一的过程还可能调用子过程. 因此需要为某些结点分类, 以与识别过程相对应. (最后一句是对的吗)
 
-设一个大类Declaration, 其下又分为var-dclr和fun-dclr两小类, param的结构很类似, 为了方便可以归入此类.
-设为一个大类Statement, 其下分为expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt.
-设一个大类Expplus, var和expression结点归为此类, 将所有的操作符表达式统一为op-exp, 也归为此类, call结点, factor结点也归为此类.
+首先程序识别一个声明序列, 所以设一个**类Declaration, 其下又分为var-dclr和fun-dclr两类**.
+对于statement, 在重复时也需要识别不同的结构, 因此也归为一类, 设一个**类Statement, 其下分为expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt**. 
+param结点位置比较单一, 单独归为一类**Param**. 
+对于简单表达式**Spexp**, 由于关系表达式不能形成递归形式的树, 因此将其分为两种, **relexp结点**最多有两个叶结点子女. **calexp结点**操作表达式归为一类的原因是它是一个可以无限递归的树形结构.
 
-各种结点所需的属性是不同的, 可以分别设计为不同的类, 然后不同的属性合并为一个联合体作为语法树结点的属性. 
+**将乘除和加减分开!!!!**
 
-则结点的类结构设计如下:
+表达式的各结点之间的关系安排好.
+
+
+
+因子结点一方面是操作符表达式的叶结点, 一方面可以有多种不同结构, 也需要统一的识别过程, 因此将其归为一类, **Factor类分为expression, var, call, constnum**. 而识别args的过程其实是将expression连成单链表的过程, 不需要单独设计结点.
+
+各种结点所需的属性是不同的, 可以将需要多个属性的结点分别设计为不同的类, 然后不同的属性种类合并为一个联合体作为语法树结点的属性. 
+
+则结点的类结构设计如下: (需要改动)
 
 ```c++
 enum class NodeKind{
-    Declaration, Statement, Expplus
+    Declaration, Statement, Param, Opexp, Factor
 };
 enum class Dclrkind{
-    var-dclr, fun-dclr, param
+    var_dclr, fun_dclr
 };
 enum class Stmtkind{
-    expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt
+    expression_stmt, compound_stmt, selection_stmt, iteration_stmt, return_stmt
 };
-enum class Exppkind{
-    var, expression, op-exp, call, factor
+enum class Factorkind{
+    var, expression, call, constnum
 };
 enum class DataType{INT, VOID};
-int const MAXCHILDREN = 3;
+int const MAXCHILDREN = 3; //最多有三个子女
 
 class vdclrAttr{
 public:
-    DataType datatype;
-    string name;
-    string arrlen;
+    DataType datatype; //变量声明类型
+    string name; //变量名字符串
+    string arrlen; //数组长度字面值
 };
 class fdclrAttr{
-    DataType datatype;
-    string name;
+public:
+    DataType datatype; //函数声明类型
+    string name; //函数名
 };
 class paramAttr{
-public:    
-    DataType datatype;
-    string name;
-    bool kind;
+public:
+    DataType datatype; //参数类型
+    string name; //参数名
+    bool isary; //是否是数组
 };
 
-class treeNode{
+class TreeNode{
 public:
-    treeNode* child[MAXCHILDREN];
-    treeNode* sibling;
+    TreeNode* child[MAXCHILDREN]; //子女结点
+    TreeNode* sibling; //兄弟结点
     int lineno;//行号
-    NodeKind nodekind;
+    NodeKind nodekind; //结点类型
     union {
-        Dclrkind dclr; Stmtkind stmt; Exppkind expp;
-    } kind;
-    union {
+        Dclrkind dclr; Stmtkind stmt; Factorkind factor;
+        bool mulayer;//是否多层
+    } kind;//这个语法并没有为联合体类型命名,直接声明了变量
+    union Attr{
         vdclrAttr vdclrattr;
         fdclrAttr fdclrattr;
         paramAttr paramattr;
-        string name;//var,call
-        int val;//expression, factor
-        string op;//或者改为记号类型?        
-    }
+        string name;//var,call,constnum
+        int val;//expression, constnum
+        TokenType op;//记号类型?
+        Attr(){}
+        ~Attr(){}
+    } attr; //属性
 	//Exptype;
 };
 ```
@@ -256,7 +269,24 @@ public:
 
 4程序的功能和程序说明：模块等
 
-这一部分说明各类结点的识别过程, 并转化为代码. 
+​		这一部分说明各类结点的识别过程, 并转化为代码. 
+在建立语法树的过程中需要不断开辟新的内存空间, 因此需要动态分配内存, 由于语法树需要一直保存到代码生成的步骤, 也就是说知道程序结束才需要释放内存, 因此可以不手动释放, 操作系统会在程序结束时自动释放内存. 
+​		整个程序其实是一个由声明结点链接成的单链表, 因此构造语法树的最上层函数是识别声明的函数, 并且是一个尾递归函数(可以改写成循环). 
+​		Declaration有两种, 但直到识别到第三个终结符时才能识别类别, 如果将构造两种Declaration的过程都写成函数, 那么该函数需要三个参数. 
+​		可以在识别Param过程中检测形参类型.
+
+​		在表达式的产生式expression → { var **=** } simple-expression中, 由于simple-expression也可能终结于var, 因此var序列的产生函数需要有参数.
+​		simple-expression即程序中的Opexp结点, 实际上是由factor和算符组成的树状结构, 采用EBNF提供的重复结构, 可以在程序中利用循环很容易地完成优先度和结合性.
+
+
+
+
+
+
+
+​		错误处理: 如果有些终结符是用于判断结点类型,进而选择生成结点的函数的, 那么其错误处理需要一个单独的else语句来说明, 而如果是其他终结符, 比如为了补全格式的右方括号, 则直接调用match函数, 利用match函数自身进行处理.
+
+
 
 
 
@@ -275,6 +305,8 @@ public:
 6总结：得到的经验、遇到的问题、改进方案等
 
 怎样构造节点类结构是问题的关键, 观察教材的做法可以看出, 首先节点结构中一定有子树的指针或者后续节点的指针, 其次需要多级类型指明节点的具体类型, 最后需要有一个结构存储节点的附加属性, 还需要一个表达式类型作为后续的准备
+
+到底怎么从零构造语法树, 首先并不是每一条产生式都对应一种结点, 比如重复结构一般不需要单独设计结点, 选择结构也不需要, 但是没有固定的规则, 只能在设计时根据是否方便为原则灵活处理. 其次, 确定好到底哪些产生式需要设计结点之后, 为这些结点设计一个统一的结构, 声明为结点类, 然后对于其他未设计结点的产生式, 设计一些统一生成不同节点的函数, 当然这个函数中肯定需要一些子函数来分别生成不同种类的结点. 
 
 个人认为构造语法树的关键在于构造语法树结点的结构, 最开始尝试时无从下手, 曾试图通过分层结构分析, 发现行不通, 后来认识到构造语法树结点的目的是通过一个统一的类来记录不同类型结点所需要存储的信息. 因此应该从逐条分析语法规则开始, 最后对分析进行总结. 
 
