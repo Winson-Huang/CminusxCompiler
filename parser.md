@@ -186,46 +186,36 @@ C-minus语言的**BNF**语法如下:
 
 ------
 
-结构不同的结点实际上都需要一个不同的识别过程, 然而程序中却有可能在同一个上下文中放置不同的结点, 比如声明序列中任意位置都可能是函数声明或变量声明, 这就要求在编程时为它们设计一个统一的过程, 当然这个统一的过程还可能调用子过程. 为结点分类的意义是语法树结点类型也是语法树结点的一种信息, 后边的步骤会需要用到.
+​		结构不同的结点需要不同的识别过程, 然而程序中却有可能在同一个上下文中放置不同的结点, 比如声明序列中任意位置都可能是函数声明或变量声明, 这就要求在编程时为它们设计一个统一的过程, 或者在某些情况下当某个结点的第一个记号已经识别后仍不能确定结点的准确类型, 也需要为几个可选的节点类型设计一个统一的过程, 再用这个统一的过程去构建不同的结点. 当然这个统一的过程还可能调用子过程. 也就是说, 一个识别过程允许构造多种结点. 
+​		同时还可能出现这种情况: 同一个结点类型, 在某些情况下可以(必须)从它的第一个记号开始识别, 比如形参列表的第二个形参, 而在另一些情况下却无法识别, 比如形参列表的第一个形参, 必须先识别数据类型后, 判断它是不是VOID, 才能确定是否构造形参结点. 因此, 一个类型的结点也允许多个识别过程构造.
+​		而为结点分类的意义是语法树结点类型也是语法树结点的一种信息, 后边的步骤会需要用到.
 
-(过渡一下
-
-
+​		接下来结合已得到的EBNF说明识别过程和结点的构造过程.
 
 ## 程序设计
 
-4程序的功能和程序说明：模块等
+​		这一部分说明各类结点的识别过程, 并转化为代码. 结点是按照它们的结构进行分类的, 但如何将某几类归为一大类则是需要结合识别过程来设计的. 这个归类过程的主要目的也是为了简化语法树的生成过程. 因此**先对语法进行综合分析, 然后给出需要的数据结构**. 在建立语法树的过程中需要不断开辟新的内存空间, 因此需要动态分配内存, 由于语法树需要一直保存到代码生成的步骤, 也就是说程序结束才需要释放内存, 因此可以不手动释放, 操作系统会在程序结束时自动释放内存. 
 
-结合识别过程讲
+​		语法分析器识别一个声明序列, 而声明有两种识别过程, 一种是变量声明, 一种是函数声明, 设一个**类Declaration, 其下又分为var-dclr和fun-dclr两类**, 用以区分这两种识别构造出的结点. 考虑到声明序列的识别, 需要为两种声明的识别设计一个统一的过程Dclr(), 识别序列的过程只需要一直调用Dclr()即可. 识别序列的过程命名为Dclr_seq(). 建立语法树的过程, 命名为Parse(), 调用Dclr_seq().
+​		对于过程Dclr()的设计, 由于Declaration有两种, 前两个记号完全相同, 如果将构造两种Declaration的过程都写成函数, 那么需要推迟到第三个记号时才可确定调用哪个过程, 即前两个记号的信息需要保存下来, 且两种声明的识别过程都需要参数来传递这两个记号的信息.
+​		对于变量声明过程Var_dclr(), 开始处理的第一个记号是";"或"[", 按照规则处理即可. 对于函数声明过Fun_dclr(), 首先消耗了"(", 接着期望识别形参列表, 将其设计为一个函数Param_seq(), 它返回形参列表的第一个元素的指针, 将形参结点单独归为一类**Param**, Param_seq()中需要处理形参列表是VOID的情况, 也需要完成不为空的形参的链接, 在这个链接过程中, 对第一个形参, 因为构建它的时候已经识别了标识符, 所以它的识别过程跟一般的Param()不同. 在此处单独设计即可, 要注意形参可能是数组的情况, 对于多个形参的识别, 可以设计一个Param()过程, 然后用循环来调用, 循环条件与形参的分隔符","有关. 构建好形参列表后, 识别一个")", 接着构建函数体, 在构建之前可以先判断前导记号是否合法.
+​		对于compound-stmt的识别, 考虑到之后的statement序列识别也有可能会用到, 将其设计为一个过程Compound_stmt(), 这个过程比较简单, 顺序构建两个子女即可, 分别调用Local_dclr()过程和Stmt_seq()过程.
 
-首先程序识别一个声明序列, 所以设一个**类Declaration, 其下又分为var-dclr和fun-dclr两类**.
-对于statement, 在重复时也需要识别不同的结构, 因此也归为一类, 设一个**类Statement, 其下分为expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt**. 
-param结点位置比较单一, 单独归为一类**Param**. 
-
-
+​		先讨论Local_dclr()过程, 这个过程实际上是识别变量声明序列的, 但是却不能直接调用, 因为变量声明序列需要两个参数, 所以在Local_dclr()过程中应该参照Dclr_seq()和Dclr()过程中的设计, 建立本地变量声明的序列.
+​		现在讨论Stmt_seq()过程, 这个过程是识别语句序列, 实际上是程序大多数情况下的主体, 需要不断识别语句, 终止条件除了右花括号以外可以添加几个比较简单的错误情况. 识别语句的过程不仅被Stmt_seq()调用, 因此必须将识别单个语句的过程单独设计一个过程Stmt(). 这个过程将识别不同语句的过程统一起来, 调用识别四种语句的过程Selection_stmt(), Iteration_stmt(), Return_stmt() ,Expression_stmt(). 根据以上分析, 可知需要设一个**类Statement, 其下分为expression-stmt, compound-stmt, selection-stmt, iteration-stmt, return-stmt五种结点**. 而Stmt_seq()的作用, 就是通过调用过程来把不同类型的语句结点链接到同一个语句序列上. 但是表达式语句没有明确的前导记号, 所以只能把不属于其他四种语句的情况全部归入表达式语句的构造过程, 让它去判断到底要不要构造表达式语句结点. 实际上, 复合语句的识别过程已经讨论, 除了复合语句和表达式语句的两外三种语句的结构比较简单, 按照EBNF语法分别设计识别过程即可, 对于表达式语句, 只有以分号开始时可以直接构造为空, 其他情况具体如何处理, 则交给表达式结点的识别过程.
 
 ​		对于expression的识别过程, 在很多地方都需要用到, 且expression的识别过程比较统一, 所以将expression设为结点**Expression**, 并将expression的识别过程设计为构造**Expression**结点的过程. 这个结点以一个可能为空的**Var结点**序列构成, 这种序列只有在此处会遇到, 为了方便设计一个独立的识别过程Var_seq().
 ​		Var_seq()很复杂, 因为Var序列是一个var结点和一个"="记号的重复序列, 但是后边紧跟简单表达式**Spexp**, 而简单表达式也有可能是Var, 这为Var序列识别的终止条件带来了很大的问题. Var_seq()中, 识别出一个Var结点后, 再识别一个"="记号, 如果此时下一个记号是var的前导记号, 那么并无法判断**是应该直接调用Var的识别过程并且把var结点加到序列末尾, 还是应该调用简单表达式的识别过程并连接到另一个子女指针**. 但是如果下一个记号不是Var的前导记号, 则一定需要终止var序列的识别过程, 开始进行下一步的操作. 那么到底何时应该继续var序列的识别过程? 实际上, 可以先不进行判断, 继续把它当作Var序列中的结点进行构造, 如果在过程中识别"="记号时发现实际记号不是"=", 那么就把已构造好但未链接到var序列末尾的这个结点当作简单表达式的第一个结点, 转而处理简单表达式, 也就是构造**Expression**的第二个子女, 而处理简单表达式的过程仅在此处出现, 它的设计需要针对此处的具体环境进行.
 ​		对于简单表达式**Spexp**的识别, 暂时不考虑上文提到的复杂环境, 先讨论它的一般结构, 考虑到结合性和优先级, 将其分为三种结点, 并对应三个层级的识别过程, **relexp结点**有两个叶结点子女**addexp结点指针**, **addexp结点**是一个递归的结构, 其叶结点是**terexp结点指针**, 也是递归结构的树, 其叶结点是factor结点. 顶层的识别过程为Spexp(), 返回一个简单表达式树, 这个简单表达式树可以是一个relexp树, 也可以是一个addexp树或terexp树. 第二层识别过程为Calexp(), 返回一个简单表达式树, 可以是addexp树或terexp树. 第三层识别过程为Terexp(), 识别的只可以是terexp结点, 这三层识别过程一起构造出完整的简单表达式树. 将这三种结点归为一大类**Spexp**. 
-​		接下来需要处理上文提到的复杂环境, 即, 开始识别简单表达式时, nexttoken中存储的有可能已经不是结构的第一个记号. 第一种情况是在识别var序列的过程中"="后边根本就不是Var(的前导token), 此时可将nexttoken中的记号视为简单表达式的第一个记号进行识别. 第一种情况是识别var之后发现后边不是"=", 这个var结点就应期望是一个简单表达式的结点, 但此时它已经被识别, 不能用普通的识别过程识别简单表达式, 这个信息需要通过参数传入简单表达式识别过程中进行处理, 而因为Var是最底层的**terexp结点**识别过程中的情况, 因此这一参数需要层层递进传入terexp()过程中, 在这个过程中进行进一步处理. 除此之外, 还要考虑这一"异常信息"的来源是 Var_seq()函数, 而这个函数的返回值是语法树结点指针, 因此 Var_seq()过程也需要一个引用型的形参来将这一信息传给外界.
+​		接下来需要处理上文提到的复杂环境, 即, 开始识别简单表达式时, nexttoken中存储的有可能已经不是结构的第一个记号. 第一种情况是在识别var序列的过程中"="后边根本就不是Var(的前导token), 此时可将nexttoken中的记号视为简单表达式的第一个记号进行识别. 第一种情况是识别var之后发现后边不是"=", 这个var结点就应期望是一个简单表达式的结点, 但此时它已经被识别, 不能用普通的识别过程识别简单表达式, 这个信息需要通过参数传入简单表达式识别过程中进行处理, 而因为Var是最底层的**terexp结点**识别过程中的情况, 因此这一参数需要**层层递进传入terexp()过程中**, 在这个过程中进行进一步处理. 除此之外, 还要考虑这一"异常信息"的来源是 Var_seq()函数, 而这个函数的返回值是语法树结点指针, 因此 Var_seq()过程也需要一个引用型的形参来将这一信息传给外界.
 
-​		对于Factor识别过程, 一方面在前边的说明中是操作符表达式的叶结点, 一方面可以有多种不同结构, 也需要统一的识别过程, 因此将其归为一类, **Factor类分为expression, var, call, constnum**. 第一个token如果是"(", 则调用expression识别过程, 如果是NUM, 调用constnum识别过程, 但若是ID, 无法判断是Var结点还是call结点. 考虑到var结点的识别过程仅在识别表达式和此处需要调用, 而前者在该处不适用(原因是在意识到结点是个Var而不是call时,nexttoken已经不是结构中第一个记号了), 因此为此处的识别过程单独设计一个函数VarorCall(), 函数中主要处理这种情况下如何生成Var, 而由于Call结点的识别过程仅出现在此处, 因此可以将其识别过程集成在此函数中.
+​		对于Factor识别过程, 一方面在前边的说明中是操作符表达式的叶结点, 一方面可以有多种不同结构, 也需要统一的识别过程, 因此将其归为一类, **Factor类分为expression, var, call, constnum**. 第一个token如果是"(", 则调用expression识别过程, 如果是NUM, 调用constnum识别过程, 但若是ID, 无法判断是Var结点还是call结点. 考虑到var结点的识别过程仅在识别表达式和此处需要调用, 而前者在该处不适用(原因是在意识到结点是个Var而不是call时,nexttoken已经不是结构中第一个记号了), 因此为此处的识别过程单独设计一个函数VarorCall(), 函数中处理这种情况下如何生成Var, 而由于Call结点的识别过程仅出现在此处, 因此可以将其识别过程集成在此函数中. 识别args的过程其实是将expression连成单链表的过程, 不需要单独设计结点. 需要注意的是这个列表可能是空的. args仅仅在此处识别, 根据具体环境进行设计即可.
 
-==所以接下来就是处理实参列表和表达式, 在完成后检查所有过程==
-
-hwangwc@qq.com
-
-47921347+AXILUOWEI@users.noreply.github.com
-
-​		而识别args的过程其实是将expression连成单链表的过程, 不需要单独设计结点.
-
-各种结点所需的属性是不同的, 可以将需要多个属性的结点分别设计为不同的类, 然后不同的属性种类合并为一个联合体作为语法树结点的属性. 
-
-则结点的类结构设计如下: (需要改动)
+​		各种结点所需的属性是不同的, 可以将需要多个属性的结点分别设计为不同的类, 然后不同的属性种类合并为一个联合体作为语法树结点的属性. 结点的类结构设计如下: (需要改动)
 
 ```c++
 enum class NodeKind{
-    Declaration, Statement, Param, Opexp, Factor
+    Declaration, Statement, Param, Spexp, Factor
 };
 enum class Dclrkind{
     var_dclr, fun_dclr
@@ -235,6 +225,9 @@ enum class Stmtkind{
 };
 enum class Factorkind{
     var, expression, call, constnum
+};
+enum class Spexpkind{
+    relexp, addexp, terexp
 };
 enum class DataType{INT, VOID};
 int const MAXCHILDREN = 3; //最多有三个子女
@@ -264,8 +257,8 @@ public:
     int lineno;//行号
     NodeKind nodekind; //结点类型
     union {
-        Dclrkind dclr; Stmtkind stmt; Factorkind factor;
-        bool mulayer;//是否多层
+        Dclrkind dclr; Stmtkind stmt; Factorkind factor; Spexpkind spexp;
+        bool rootkind;//是否根分类,比如Param就没有二级分类
     } kind;//这个语法并没有为联合体类型命名,直接声明了变量
     union Attr{
         vdclrAttr vdclrattr;
@@ -273,7 +266,7 @@ public:
         paramAttr paramattr;
         string name;//var,call,constnum
         int val;//expression, constnum
-        TokenType op;//记号类型?
+        TokenType op;//记号类型?除了标识符,都可以用这个存
         Attr(){}
         ~Attr(){}
     } attr; //属性
@@ -281,20 +274,57 @@ public:
 };
 ```
 
+函数的声明如下:
 
+```c++
+//parse.cpp中
+//函数声明
+static void match(TokenType expected);
+//五大类结点的空间分配
+static TreeNode* Newdclr(Dclrkind dclrkind);
+static TreeNode* Newparam();
+static TreeNode* Newstmt(Stmtkind stmtkind);
+static TreeNode* Newfactor(Factorkind factorkind);
+static TreeNode* Newspexp();
 
-​		这一部分说明各类结点的识别过程, 并转化为代码. 
-在建立语法树的过程中需要不断开辟新的内存空间, 因此需要动态分配内存, 由于语法树需要一直保存到代码生成的步骤, 也就是说知道程序结束才需要释放内存, 因此可以不手动释放, 操作系统会在程序结束时自动释放内存. 
-​		整个程序其实是一个由声明结点链接成的单链表, 因此构造语法树的最上层函数是识别声明的函数, 并且是一个尾递归函数(可以改写成循环). 
-​		Declaration有两种, 但直到识别到第三个终结符时才能识别类别, 如果将构造两种Declaration的过程都写成函数, 那么该函数需要三个参数. 
-​		可以在识别Param过程中检测形参类型.
+//各类结点的构造与归并
+static TreeNode* Dclr_seq();
+static TreeNode* Dclr();
+static TreeNode* Var_dclr(DataType tmpdatatype, string tmpname);
+static TreeNode* Fun_dclr(DataType tmpdatatype, string tmpname);
 
-​		在表达式的产生式expression → { var **=** } simple-expression中, 由于simple-expression也可能终结于var, 因此var序列的产生函数需要有参数.
-​		simple-expression即程序中的Opexp结点, 实际上是由factor和算符组成的树状结构, 采用EBNF提供的重复结构, 可以在程序中利用循环很容易地完成优先度和结合性.
+static TreeNode* Param_seq();
+static TreeNode* Param();
 
+static TreeNode* Compound_stmt();
+static TreeNode* Local_dclr();
+static TreeNode* Stmt_seq();
+static TreeNode* Stmt();
+static TreeNode* Selection_stmt();
+static TreeNode* Iteration_stmt();
+static TreeNode* Return_stmt();
+static TreeNode* Expression_stmt();
 
+static TreeNode* Expression();
+static TreeNode* Var_seq(TreeNode*& tmpvar);
+static TreeNode* Var();
+static TreeNode* Factor();//核心
+static TreeNode* VarorCall();
+static TreeNode* Arg_seq();//Exp的序列
+static TreeNode* Constnum();
 
+static TreeNode* Spexp(TreeNode* tmpvar);//三层识别过程
+static TreeNode* Calexp(TreeNode* tmpvar);
+static TreeNode* Terexp(TreeNode* tmpvar);
+//parse.h中
+TreeNode* Parse();
+//打印语法树
+void PrintTree(TreeNode* tree);
+```
 
+​		
+
+​		对于语法树的展示,
 
 
 

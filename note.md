@@ -35,3 +35,5 @@ https://github.com/Winson-Huang/CminusxCompiler
 ## 总结
 
 实际上可以利用C++语言的类特性, 将每一个模块都设计为一个类, 头文件中规定好函数与变量的公开程度, 源文件中对各函数进行实现. 然后在`global.h`中extern声明各模块的实例. 这样可以较好实现信息的共享, 并且更加灵活.  可以将一个模块的所有函数声明集中在一起, 也避免了使用static限制函数的使用范围. 
+
+47921347+AXILUOWEI@users.noreply.github.com
