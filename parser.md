@@ -1,14 +1,10 @@
-2019.11.10 黄文诚
+2019.11.10 黄文诚 201711140124
 
 # 语法分析器部分(Parser)
 
-
-
 ## 实验目的
 
-构造语法分析器的目的是从扫描器的输出(记号序列)中构造出语法树. 构造语法树的依据是C-Minus语言的BNF语法. 大体思路是根据该语言的BNF语法编写多个相互调用的识别过程, 并用最顶层的识别过程构造整个语法树. (待续)
-
-
+构造语法分析器的目的是从扫描器的输出(记号序列)中构造出语法树. 构造语法树的依据是C-Minus语言的BNF语法. 大体思路是根据该语言的BNF语法编写多个相互调用的识别过程, 并用最顶层的识别过程构造整个语法树. 
 
 ## 语法说明
 
@@ -162,7 +158,7 @@ C-minus语言的**BNF**语法如下:
 
 22. additive-expression → term { addop term }
 
-    虽然这里是重复结构, 但不设计为线性表, 而是按照BNF中的结构, 设置**两个子女指针和一个属性**, 分别存储additive-expression结点和乘积结点和算符. 
+    虽然这里是重复结构, 但不设计为线性表, 而是按照BNF中的结构, 设置**两个子女指针和一个属性**, 分别存储additive-expression结点和乘积结点和算符. 	
 
 23. addop →**+** | **-**
 
@@ -319,7 +315,7 @@ static TreeNode* Terexp(TreeNode* tmpvar);
 //parse.h中
 TreeNode* Parse();
 //打印语法树
-void PrintTree(TreeNode* tree);
+void PrintTree(TreeNode* tree, int layer);
 ```
 
 ​		
@@ -340,20 +336,226 @@ void PrintTree(TreeNode* tree);
 
 ## 程序测试
 
-5输入实例（至少一个成功和一个失败的例子）和运行结果
+对于下面的例子进行测试, 这个例子基本包括了所有的语法, 且符合语法规则(不一定符合语义规则): 
+
+```c
+int gcd (int u, int v,int a[])
+{ if (v == 
+0) return
+ u 
+;
+else return gcd(v,u-u/v*v);
+/* u-u/v*v == 
+u mod v */
+}
+
+int x; 
+int y[3];
+
+void main(void)
+{ int x; int y;
+x = input(); y = input();
+output(gcd( x , y ));
+
+while(x>y){
+    int x;
+    x=y[1];
+    x=y[1]=x=y[1]+y[1+1];
+    x=y[0]=1+9*3;
+}
+
+}
+
+```
 
 
+
+测试发现可以生成正确的语法树:(在文件testsrc\\syntax_sample.txt)
+
+```
+FUN_dclr:
+  type: INT
+  name: gcd
+  Param_seq: 
+    Param: INT u
+    Param: INT v
+    Param: INT [] a
+  Fun_body:
+    ComPD: 
+      Locdclr: 
+      Stmtlst: 
+        IF:
+          Condition:
+            Exp: 
+              left: null
+              right: 
+                Spexp: ==
+                  Var: v
+                  Const: 0
+          Body:
+            RETURN:
+              Exp: 
+                left: null
+                right: 
+                  Var: u
+          ELSE:
+            RETURN:
+              Exp: 
+                left: null
+                right: 
+                  CALL: gcd
+                    Args:
+                      Exp: 
+                        left: null
+                        right: 
+                          Var: v
+                      Exp: 
+                        left: null
+                        right: 
+                          Spexp: -
+                            Var: u
+                            Spexp: *
+                              Spexp: /
+                                Var: u
+                                Var: v
+                              Var: v
+VAR_dclr:
+  type: INT
+  name: x
+  length: null
+VAR_dclr:
+  type: INT
+  name: y
+  length: 3
+FUN_dclr:
+  type: VOID
+  name: main
+  Param_seq: void
+  Fun_body:
+    ComPD: 
+      Locdclr: 
+        VAR_dclr:
+          type: INT
+          name: x
+          length: null
+        VAR_dclr:
+          type: INT
+          name: y
+          length: null
+      Stmtlst: 
+        Expstmt:
+          Exp: 
+            left: 
+              Var: x
+            right: 
+              CALL: input
+                Args:
+        Expstmt:
+          Exp: 
+            left: 
+              Var: y
+            right: 
+              CALL: input
+                Args:
+        Expstmt:
+          Exp: 
+            left: null
+            right: 
+              CALL: output
+                Args:
+                  Exp: 
+                    left: null
+                    right: 
+                      CALL: gcd
+                        Args:
+                          Exp: 
+                            left: null
+                            right: 
+                              Var: x
+                          Exp: 
+                            left: null
+                            right: 
+                              Var: y
+        WHILE:
+          Condition:
+            Exp: 
+              left: null
+              right: 
+                Spexp: >
+                  Var: x
+                  Var: y
+          Body:
+            ComPD: 
+              Locdclr: 
+                VAR_dclr:
+                  type: INT
+                  name: x
+                  length: null
+              Stmtlst: 
+                Expstmt:
+                  Exp: 
+                    left: 
+                      Var: x
+                    right: 
+                      Var: y
+                        index: 
+                          Exp: 
+                            left: null
+                            right: 
+                              Const: 1
+                Expstmt:
+                  Exp: 
+                    left: 
+                      Var: x
+                      Var: y
+                        index: 
+                          Exp: 
+                            left: null
+                            right: 
+                              Const: 1
+                      Var: x
+                    right: 
+                      Spexp: +
+                        Var: y
+                          index: 
+                            Exp: 
+                              left: null
+                              right: 
+                                Const: 1
+                        Var: y
+                          index: 
+                            Exp: 
+                              left: null
+                              right: 
+                                Spexp: +
+                                  Const: 1
+                                  Const: 1
+                Expstmt:
+                  Exp: 
+                    left: 
+                      Var: x
+                      Var: y
+                        index: 
+                          Exp: 
+                            left: null
+                            right: 
+                              Const: 0
+                    right: 
+                      Spexp: +
+                        Const: 1
+                        Spexp: *
+                          Const: 9
+                          Const: 3
+
+```
 
 
 
 ## 实验总结
 
-6总结：得到的经验、遇到的问题、改进方案等
+​		怎样构造节点类结构是问题的关键, 观察教材的做法可以看出, 首先节点结构中一定有子树的指针或者后续节点的指针, 其次需要多级类型指明节点的具体类型, 最后需要有一个结构存储节点的附加属性, 还需要一个表达式类型作为后续的准备. 开始尝试时无从下手, 曾试图通过分层结构分析, 发现行不通, 后来认识到构造语法树结点的**目的**是通过一个统一的类来记录不同类型结点所需要存储的信息. 因此应该从逐条分析语法规则开始, 最后对分析进行总结. 
 
-怎样构造节点类结构是问题的关键, 观察教材的做法可以看出, 首先节点结构中一定有子树的指针或者后续节点的指针, 其次需要多级类型指明节点的具体类型, 最后需要有一个结构存储节点的附加属性, 还需要一个表达式类型作为后续的准备
-
-到底怎么从零构造语法树, 首先并不是每一条产生式都对应一种结点, 比如重复结构一般不需要单独设计结点, 选择结构也不需要, 但是没有固定的规则, 只能在设计时根据是否方便为原则灵活处理. 其次, 确定好到底哪些产生式需要设计结点之后, 为这些结点设计一个统一的结构, 声明为结点类, 然后对于其他未设计结点的产生式, 设计一些统一生成不同节点的函数, 当然这个函数中肯定需要一些子函数来分别生成不同种类的结点. 
-
-个人认为构造语法树的关键在于构造语法树结点的结构, 最开始尝试时无从下手, 曾试图通过分层结构分析, 发现行不通, 后来认识到构造语法树结点的目的是通过一个统一的类来记录不同类型结点所需要存储的信息. 因此应该从逐条分析语法规则开始, 最后对分析进行总结. 
-
-感觉语法分析和语义分析的关系比这一部分与扫描器的关系更密切. 
+​		在本模块即将完成时我认识到, 该模块的设计最合理的步骤应该是: 
+​		首先根据结点的结构对结点进行分类, 确定哪些结构是一个单独的结点, 哪些结构不需要单独设计结点. 最典型的情况就是那些顺序结构只需要组织成链表即可. 这个步骤中确定的结点分类是最低层级的结点分类, 也就是说还没有将小类归为大类, 比如, 没有将六种不同的语句归为一个语句类.
+​		然后在设计识别过程时, 需要特别注意的就是同样的结点, 在不同的位置识别时有可能需要设计不同的函数, 比如在识别形参列表时, 若第一个形参是存在的, 那么识别它的过程与识别第二个形参以及以后的形参的过程应该设计为不同函数, 因为在识别第一个形参时, 其类型标识符已经被消耗, 而之后的形参则没有被消耗, 且所有形参不论位置在哪里, 识别完成时不应该消耗掉不属于它的记号.
+​		除此之外, 在某些情况下还需要将不同结点的识别过程综合到一个识别过程中, 以便于重复调用, 构造节点序列. 这些在上文中也说明过. 而在编写程序的时候发现将某些类似的结点归为一个大类, 可以为程序设计带来方便, 并且增加可读性, 但至少在本阶段, 归为几个大类这一动作对程序实现来说不是必须的.
