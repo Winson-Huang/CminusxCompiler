@@ -11,9 +11,10 @@ using namespace std;
 //±äÁ¿Çø
 string infilename;
 string outfilename;
+string syntaxfilename;
 Token nexttoken;    //ÏÂÒ»¸ö¼ÇºÅ
-//ÄÚ²¿
 int lineord=0;  //ĞĞºÅ
+//ÄÚ²¿
 int const MAX = 256;    //»º³åÇø×î´ó³¤¶È
 char linebuf[MAX];  //Ô´ÎÄ¼şĞĞ»º³å
 char nxtChr;    //´ı´¦ÀíµÄ×Ö·û
@@ -21,9 +22,25 @@ const int height=28, width=20; //×ª»»±í´óĞ¡
 State transion[height][width]; //×ª»»±í
 StateType sttype[height];   //Çø·Ö½ÓÊÜ×´Ì¬£¬·Ç½ÓÊÜ×´Ì¬£¬ ´íÎó×´Ì¬µÄÈıÖµÊı×é
 const int reWordsSize = 6;  const int WordmaxSize = 6;
-string reservedWords[reWordsSize] = {"else", "if", "int", "return", "void", "while"};
+string reservedWords[reWordsSize] = {"else", "if", "int", "return", "void", "while"};//ÕâÀï±£³ÖË³ĞòÓëtokentypeÃ¶¾ÙÖĞµÄÏàÍ¬,¿ÉÒÔ·½±ã±à³Ì
+
+static void BuildTransion();
+static void GetFileName();
 
 //º¯ÊıÇø
+void Strtsp()  //»¶Ó­ĞÅÏ¢Óë×¼±¸¹¤×÷
+{
+    string welcomeText = "cminusx\n version: 0.1 \nÉ¨ÃèÓëÓï·¨·ÖÎö¿ªÊ¼...\n";
+    cout<<welcomeText;
+    BuildTransion();
+    GetFileName();
+}
+
+void Endsp()  //½áÊøĞÅÏ¢
+{
+    cout<<"É¨ÃèÓëÓï·¨·ÖÎö½áÊø.\n";
+}
+
 static void BuildTransion()    //´ÓÎÄ¼ş¹¹Ôì×ª»»±í
 {
     //¹¹Ôì×ª»»±í
@@ -73,26 +90,17 @@ static void GetFileName()    //»ñÈ¡ÎÄ¼şÃû
         cin>>infilename;
         cout<<"ÇëÊäÈë´øÓĞÍêÕûÂ·¾¶µÄÉ¨ÃèĞÅÏ¢ÎÄ¼şÃû:";
         cin>>outfilename;
+        cout<<"ÇëÊäÈë´øÓĞÍêÕûÂ·¾¶µÄÓï·¨Ê÷ÎÄ¼şÃû:";
+        cin>>syntaxfilename;
     }
     else
     {
         infilename = ".\\testsrc\\sample.cmnsx";
         outfilename = ".\\testsrc\\scanned_sample.txt";
+        syntaxfilename = ".\\testsrc\\syntax_sample.txt";
     }
 }
 
-void Strtscan()  //»¶Ó­ĞÅÏ¢Óë×¼±¸¹¤×÷
-{
-    string welcomeText = "scanner for cminusx\n version: 0.1 \nÉ¨Ãè³ÌĞò¿ªÊ¼...\n";
-    cout<<welcomeText;
-    BuildTransion();
-    GetFileName();
-}
-
-void Endscan()  //½áÊøĞÅÏ¢
-{
-    cout<<"É¨Ãè³ÌĞò½áÊø.\n";
-}
 
 static char GetNextChar() //µÃµ½ÏÂÒ»¸ö×Ö·û
 {
@@ -163,7 +171,7 @@ static AlphaBeta ChrToAlpBt(char nxtchr)   //½«³õÊ¼×Ö·û×ª»¯Îª×ÖÄ¸±íÃ¶¾ÙÀàĞÍ
                 case '(': nxtAlphBt = AlphaBeta::LPAREN;break;
                 case ')': nxtAlphBt = AlphaBeta::RPAREN;break;
                 case '[': nxtAlphBt = AlphaBeta::LSB;break;
-                case ']': nxtAlphBt = AlphaBeta::LSB;break;
+                case ']': nxtAlphBt = AlphaBeta::RSB;break;
                 case '{': nxtAlphBt = AlphaBeta::LBR;break;
                 case '}': nxtAlphBt = AlphaBeta::RBR;break;
                 default: break;
@@ -274,8 +282,8 @@ static void PrintCharPosError()    //ÏÂÒ»¸ö×Ö·û²»ÊÇELSECHAR£¬ÓĞ¿ÉÄÜÊÇÏÂ¸ö¼ÇºÅµÄÊ
 }
 
 void GetNextToken() //µÃµ½ÏÂÒ»¸ö¼ÇºÅ
-{
-    //³õÊ¼»¯
+{ //³õÊ¼»¯
+    nexttoken.Reset();  //ÖØÖÃ¼ÇºÅ
     AlphaBeta nxtABt = AlphaBeta::ELSECHR;
     State now = State::INIT;
     State next = now;
@@ -304,7 +312,7 @@ void GetNextToken() //µÃµ½ÏÂÒ»¸ö¼ÇºÅ
                 }//Èç¹û²»ÊÇ×¢ÊÍ£¬ ¿ÉÒÔÉú³É¼ÇºÅ
                 nexttoken.type = AcptToTknTp(now, nexttoken.value);               //Í¨¹ı½ÓÊÜ×´Ì¬ºÍ¼ÇºÅ´®ÖµÈ·¶¨¼ÇºÅÀàĞÍ
                 PrintToken();//´òÓ¡¼ÇºÅ
-                nexttoken.Reset();  //ÖØÖÃ¼ÇºÅ
+                //nexttoken.Reset();  //ÖØÖÃ¼ÇºÅ
                 return ;
             }
             else    //ÉÏÒ»¸ö×´Ì¬²»ÊÇ½ÓÊÜ×´Ì¬, ÖØÖÃ×´Ì¬, ÖØĞÂ¿ªÊ¼

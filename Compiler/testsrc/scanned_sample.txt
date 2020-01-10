@@ -1,75 +1,164 @@
-1: void main(void) &&^^$$$%%
-	1: reserved word--void
-	1: identifier, name=main
+1: int gcd (int u, int v,int a[])
+	1: reserved word--int
+	1: identifier, name=gcd
 	1: (
-	1: reserved word--void
+	1: reserved word--int
+	1: identifier, name=u
+	1: ,
+	1: reserved word--int
+	1: identifier, name=v
+	1: ,
+	1: reserved word--int
+	1: identifier, name=a
+	1: [
+	1: ]
 	1: )
-	1: errorchar: &
-	1: errorchar: &
-	1: errorchar: ^
-	1: errorchar: ^
-	1: errorchar: $
-	1: errorchar: $
-	1: errorchar: $
-	1: errorchar: %
-	1: errorchar: %
-2: 
-3: 
-4: { int x; int y;
-	4: {
-	4: reserved word--int
-	4: identifier, name=x
-	4: ;
-	4: reserved word--int
-	4: identifier, name=y
-	4: ;
-5: x = inp^^ut(); y = input();
-	5: identifier, name=x
-	5: =
-	5: identifier, name=inp
-	5: errorchar: ^
-	5: errorchar: ^
-	5: identifier, name=ut
-	5: (
-	5: )
+2: { if (v == 
+	2: {
+	2: reserved word--if
+	2: (
+	2: identifier, name=v
+	2: ==
+3: 0) return
+	3: number, value=0
+	3: )
+	3: reserved word--return
+4:  u 
+	4: identifier, name=u
+5: ;
 	5: ;
-	5: identifier, name=y
-	5: =
-	5: identifier, name=input
-	5: (
-	5: )
-	5: ;
-6: if(x!%%=y)
-	6: reserved word--if
+6: else return gcd(v,u-u/v*v);
+	6: reserved word--else
+	6: reserved word--return
+	6: identifier, name=gcd
 	6: (
-	6: identifier, name=x
-	6: unfinished token--! errorchar: %
-	6: errorchar: %
-	6: =
-	6: identifier, name=y
+	6: identifier, name=v
+	6: ,
+	6: identifier, name=u
+	6: -
+	6: identifier, name=u
+	6: /
+	6: identifier, name=v
+	6: *
+	6: identifier, name=v
 	6: )
-7: output(gcd( x , y ));
-	7: identifier, name=output
-	7: (
-	7: identifier, name=gcd
-	7: (
-	7: identifier, name=x
-	7: ,
-	7: identifier, name=y
-	7: )
-	7: )
-	7: ;
-8: if(x!!=y) x = y;
-	8: reserved word--if
-	8: (
-	8: identifier, name=x
-	8: unfinished token--! 
-	8: !=
-	8: identifier, name=y
-	8: )
-	8: identifier, name=x
-	8: =
-	8: identifier, name=y
-	8: ;
+	6: ;
+7: /* u-u/v*v == 
+8: u mod v */
 9: }
 	9: }
+10: 
+11: int x; 
+	11: reserved word--int
+	11: identifier, name=x
+	11: ;
+12: int y[3];
+	12: reserved word--int
+	12: identifier, name=y
+	12: [
+	12: number, value=3
+	12: ]
+	12: ;
+13: 
+14: void main(void)
+	14: reserved word--void
+	14: identifier, name=main
+	14: (
+	14: reserved word--void
+	14: )
+15: { int x; int y;
+	15: {
+	15: reserved word--int
+	15: identifier, name=x
+	15: ;
+	15: reserved word--int
+	15: identifier, name=y
+	15: ;
+16: x = input(); y = input();
+	16: identifier, name=x
+	16: =
+	16: identifier, name=input
+	16: (
+	16: )
+	16: ;
+	16: identifier, name=y
+	16: =
+	16: identifier, name=input
+	16: (
+	16: )
+	16: ;
+17: output(gcd( x , y ));
+	17: identifier, name=output
+	17: (
+	17: identifier, name=gcd
+	17: (
+	17: identifier, name=x
+	17: ,
+	17: identifier, name=y
+	17: )
+	17: )
+	17: ;
+18: 
+19: while(x>y){
+	19: reserved word--while
+	19: (
+	19: identifier, name=x
+	19: >
+	19: identifier, name=y
+	19: )
+	19: {
+20:     int x;
+	20: reserved word--int
+	20: identifier, name=x
+	20: ;
+21:     x=y[1];
+	21: identifier, name=x
+	21: =
+	21: identifier, name=y
+	21: [
+	21: number, value=1
+	21: ]
+	21: ;
+22:     x=y[1]=x=y[1]+y[1+1];
+	22: identifier, name=x
+	22: =
+	22: identifier, name=y
+	22: [
+	22: number, value=1
+	22: ]
+	22: =
+	22: identifier, name=x
+	22: =
+	22: identifier, name=y
+	22: [
+	22: number, value=1
+	22: ]
+	22: +
+	22: identifier, name=y
+	22: [
+	22: number, value=1
+	22: +
+	22: number, value=1
+	22: ]
+	22: ;
+23:     x=y[0]=1+9*3;
+	23: identifier, name=x
+	23: =
+	23: identifier, name=y
+	23: [
+	23: number, value=0
+	23: ]
+	23: =
+	23: number, value=1
+	23: +
+	23: number, value=9
+	23: *
+	23: number, value=3
+	23: ;
+24: }
+	24: }
+25: 
+26: }
+	26: }
+27: 
+28: 

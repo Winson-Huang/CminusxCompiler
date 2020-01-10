@@ -1,9 +1,27 @@
-void main(void) &&^^$$$%%
-
-
-{ int x; int y;
-x = inp^^ut(); y = input();
-if(x!%%=y)
-output(gcd( x , y ));
-if(x!!=y) x = y;
+int gcd (int u, int v,int a[])
+{ if (v == 
+0) return
+ u 
+;
+else return gcd(v,u-u/v*v);
+/* u-u/v*v == 
+u mod v */
 }
+
+int x; 
+int y[3];
+
+void main(void)
+{ int x; int y;
+x = input(); y = input();
+output(gcd( x , y ));
+
+while(x>y){
+    int x;
+    x=y[1];
+    x=y[1]=x=y[1]+y[1+1];
+    x=y[0]=1+9*3;
+}
+
+}
+

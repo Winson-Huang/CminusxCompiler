@@ -1,0 +1,173 @@
+FUN_dclr:
+  type: INT
+  name: gcd
+  Param_seq: 
+    Param: INT u
+    Param: INT v
+    Param: INT [] a
+  Fun_body:
+    ComPD: 
+      Locdclr: 
+      Stmtlst: 
+        IF:
+          Condition:
+            Exp: 
+              left: null
+              right: 
+                Spexp: ==
+                  Var: v
+                  Const: 0
+          Body:
+            RETURN:
+              Exp: 
+                left: null
+                right: 
+                  Var: u
+          ELSE:
+            RETURN:
+              Exp: 
+                left: null
+                right: 
+                  CALL: gcd
+                    Args:
+                      Exp: 
+                        left: null
+                        right: 
+                          Var: v
+                      Exp: 
+                        left: null
+                        right: 
+                          Spexp: -
+                            Var: u
+                            Spexp: *
+                              Spexp: /
+                                Var: u
+                                Var: v
+                              Var: v
+VAR_dclr:
+  type: INT
+  name: x
+  length: null
+VAR_dclr:
+  type: INT
+  name: y
+  length: 3
+FUN_dclr:
+  type: VOID
+  name: main
+  Param_seq: void
+  Fun_body:
+    ComPD: 
+      Locdclr: 
+        VAR_dclr:
+          type: INT
+          name: x
+          length: null
+        VAR_dclr:
+          type: INT
+          name: y
+          length: null
+      Stmtlst: 
+        Expstmt:
+          Exp: 
+            left: 
+              Var: x
+            right: 
+              CALL: input
+                Args:
+        Expstmt:
+          Exp: 
+            left: 
+              Var: y
+            right: 
+              CALL: input
+                Args:
+        Expstmt:
+          Exp: 
+            left: null
+            right: 
+              CALL: output
+                Args:
+                  Exp: 
+                    left: null
+                    right: 
+                      CALL: gcd
+                        Args:
+                          Exp: 
+                            left: null
+                            right: 
+                              Var: x
+                          Exp: 
+                            left: null
+                            right: 
+                              Var: y
+        WHILE:
+          Condition:
+            Exp: 
+              left: null
+              right: 
+                Spexp: >
+                  Var: x
+                  Var: y
+          Body:
+            ComPD: 
+              Locdclr: 
+                VAR_dclr:
+                  type: INT
+                  name: x
+                  length: null
+              Stmtlst: 
+                Expstmt:
+                  Exp: 
+                    left: 
+                      Var: x
+                    right: 
+                      Var: y
+                        index: 
+                          Exp: 
+                            left: null
+                            right: 
+                              Const: 1
+                Expstmt:
+                  Exp: 
+                    left: 
+                      Var: x
+                      Var: y
+                        index: 
+                          Exp: 
+                            left: null
+                            right: 
+                              Const: 1
+                      Var: x
+                    right: 
+                      Spexp: +
+                        Var: y
+                          index: 
+                            Exp: 
+                              left: null
+                              right: 
+                                Const: 1
+                        Var: y
+                          index: 
+                            Exp: 
+                              left: null
+                              right: 
+                                Spexp: +
+                                  Const: 1
+                                  Const: 1
+                Expstmt:
+                  Exp: 
+                    left: 
+                      Var: x
+                      Var: y
+                        index: 
+                          Exp: 
+                            left: null
+                            right: 
+                              Const: 0
+                    right: 
+                      Spexp: +
+                        Const: 1
+                        Spexp: *
+                          Const: 9
+                          Const: 3
